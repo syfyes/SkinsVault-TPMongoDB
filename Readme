@@ -1,5 +1,6 @@
 # SkinsVault
 
+
 Petite application de marketplace de skins (thème League of Legends). On peut
 parcourir un catalogue de skins, créer des joueurs, leur faire acheter des skins
 en fonction de leur solde, et voir un classement des joueurs les plus riches.
