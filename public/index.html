@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkinsVault — Marketplace LoL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#0a0c12; --surface:#111420; --surface-2:#181c2e; --border:#1f2540;
+      --accent:#7c3aed; --accent-glow:#a855f780; --gold:#f59e0b; --text:#e2e8f0;
+      --muted:#64748b; --commun:#94a3b8; --rare:#3b82f6; --epique:#a855f7;
+      --legendaire:#f59e0b; --danger:#ef4444; --success:#22c55e;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+    header{background:linear-gradient(135deg,#0a0c12 0%,#12102a 100%);border-bottom:1px solid var(--border);padding:1.25rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:10;}
+    .logo{font-family:'Rajdhani',sans-serif;font-size:1.8rem;font-weight:700;letter-spacing:.05em;background:linear-gradient(90deg,#7c3aed,#a855f7,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .logo span{font-weight:400;opacity:.7;}
+    nav{margin-left:auto;display:flex;gap:.25rem;flex-wrap:wrap;}
+    .nav-btn{background:none;border:1px solid transparent;color:var(--muted);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;letter-spacing:.05em;padding:.5rem 1.1rem;border-radius:6px;cursor:pointer;transition:all .2s;}
+    .nav-btn:hover,.nav-btn.active{color:var(--text);border-color:var(--border);background:var(--surface);}
+    .nav-btn.active{border-color:var(--accent);color:#a855f7;}
+    main{max-width:1200px;margin:0 auto;padding:2rem;}
+    .section{display:none;}
+    .section.visible{display:block;}
+    h2{font-family:'Rajdhani',sans-serif;font-size:1.6rem;font-weight:700;letter-spacing:.06em;margin-bottom:1.5rem;}
+    #toast{position:fixed;bottom:2rem;right:2rem;padding:.85rem 1.4rem;border-radius:8px;font-size:.9rem;font-weight:500;opacity:0;transform:translateY(10px);transition:all .3s;z-index:100;max-width:320px;}
+    #toast.show{opacity:1;transform:translateY(0);}
+    #toast.success{background:#14532d;border:1px solid var(--success);color:#86efac;}
+    #toast.error{background:#450a0a;border:1px solid var(--danger);color:#fca5a5;}
+    .filter-bar{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+    .filter-chip{padding:.35rem .9rem;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.85rem;cursor:pointer;transition:all .2s;}
+    .filter-chip:hover,.filter-chip.active{background:var(--surface-2);color:var(--text);}
+    .filter-chip[data-rarity="commun"].active{border-color:var(--commun);color:var(--commun);}
+    .filter-chip[data-rarity="Rare"].active{border-color:var(--rare);color:var(--rare);}
+    .filter-chip[data-rarity="Epique"].active{border-color:var(--epique);color:var(--epique);}
+    .filter-chip[data-rarity="Legendaire"].active{border-color:var(--legendaire);color:var(--legendaire);}
+    .skins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;}
+    .skin-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;}
+    .skin-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px #00000060;}
+    .skin-card-top{height:130px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;background:var(--surface-2);position:relative;}
+    .rarity-bar{position:absolute;bottom:0;left:0;right:0;height:3px;}
+    .rarity-commun{background:var(--commun);}
+    .rarity-rare{background:var(--rare);box-shadow:0 0 8px #3b82f660;}
+    .rarity-epique{background:var(--epique);box-shadow:0 0 8px #a855f760;}
+    .rarity-legendaire{background:var(--legendaire);box-shadow:0 0 12px #f59e0b80;}
+    .skin-card-body{padding:1rem;flex:1;display:flex;flex-direction:column;gap:.5rem;}
+    .skin-name{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:.04em;}
+    .skin-meta{display:flex;justify-content:space-between;align-items:center;}
+    .rarity-badge{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .55rem;border-radius:4px;}
+    .badge-commun{background:#1e293b;color:var(--commun);}
+    .badge-rare{background:#1e3a5f;color:var(--rare);}
+    .badge-epique{background:#2e1065;color:var(--epique);}
+    .badge-legendaire{background:#451a03;color:var(--legendaire);}
+    .skin-price{font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:var(--gold);}
+    .btn-buy{margin-top:auto;width:100%;padding:.6rem;background:var(--accent);border:none;border-radius:7px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:background .2s,box-shadow .2s;}
+    .btn-buy:hover{background:#6d28d9;box-shadow:0 0 14px var(--accent-glow);}
+    .modal-overlay{position:fixed;inset:0;background:#000000cc;display:none;align-items:center;justify-content:center;z-index:50;padding:1rem;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2rem;width:480px;max-width:95vw;max-height:85vh;overflow-y:auto;}
+    .modal h3{font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:1.25rem;}
+    .player-option{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem;cursor:pointer;transition:border-color .2s,background .2s;}
+    .player-option:hover{border-color:var(--accent);background:var(--surface-2);}
+    .player-option strong{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:1.05rem;}
+    .player-option small{color:var(--gold);font-size:.85rem;}
+    .modal-close{margin-top:1rem;width:100%;padding:.55rem;background:var(--surface-2);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-size:.95rem;cursor:pointer;}
+    .modal-close:hover{color:var(--text);}
+    .form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:480px;}
+    .form-group{margin-bottom:1.25rem;}
+    label{display:block;font-size:.8rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;}
+    input,select{width:100%;padding:.65rem .9rem;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s;}
+    input:focus,select:focus{border-color:var(--accent);}
+    select option{background:var(--bg);}
+    .btn-primary{padding:.7rem 1.5rem;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:background .2s,box-shadow .2s;}
+    .btn-primary:hover{background:#6d28d9;box-shadow:0 0 14px var(--accent-glow);}
+    .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+    .btn-refresh{padding:.5rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-size:.9rem;cursor:pointer;transition:color .2s,border-color .2s;}
+    .btn-refresh:hover{color:var(--text);border-color:var(--accent);}
+    .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;}
+    .player-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;display:flex;flex-direction:column;gap:.75rem;transition:transform .2s,box-shadow .2s;}
+    .player-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px #00000060;}
+    .player-card-name{font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;letter-spacing:.04em;}
+    .player-stats{display:flex;gap:1.25rem;}
+    .player-stat{display:flex;flex-direction:column;}
+    .player-stat .val{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;}
+    .player-stat .val.gold{color:var(--gold);}
+    .player-stat .val.violet{color:var(--epique);}
+    .player-stat .lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+    .btn-inventory{margin-top:auto;padding:.55rem;background:var(--surface-2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;letter-spacing:.05em;cursor:pointer;transition:border-color .2s;}
+    .btn-inventory:hover{border-color:var(--accent);}
+    .inv-item{display:flex;align-items:center;gap:.9rem;padding:.75rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem;}
+    .inv-emoji{font-size:1.8rem;width:42px;text-align:center;}
+    .inv-info{flex:1;}
+    .inv-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:1rem;}
+    .inv-date{font-size:.78rem;color:var(--muted);margin-top:.15rem;}
+    .inv-price{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--gold);font-size:.95rem;}
+    .wealth-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+    .wealth-table th{background:var(--surface-2);padding:.85rem 1.25rem;text-align:left;font-size:.75rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
+    .wealth-table td{padding:1rem 1.25rem;border-bottom:1px solid var(--border);font-size:.95rem;}
+    .wealth-table tr:last-child td{border-bottom:none;}
+    .wealth-table tr:hover td{background:var(--surface-2);}
+    .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.9rem;}
+    .rank-1{background:var(--legendaire);color:#000;}
+    .rank-2{background:#94a3b8;color:#000;}
+    .rank-3{background:#b45309;color:#fff;}
+    .rank-other{background:var(--surface-2);color:var(--muted);}
+    .fortune-bar-wrap{display:flex;align-items:center;gap:.75rem;}
+    .fortune-bar{flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+    .fortune-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),#f59e0b);transition:width .6s ease;}
+    .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted);}
+    .empty-state .icon{font-size:3rem;margin-bottom:.75rem;}
+    .empty-state p{font-size:.95rem;}
+    .loading{display:flex;justify-content:center;padding:3rem;}
+    .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Skins<span>Vault</span></div>
+  <nav>
+    <button class="nav-btn active" data-tab="catalogue" onclick="showSection('catalogue',this)">Catalogue</button>
+    <button class="nav-btn" data-tab="joueurs" onclick="showSection('joueurs',this)">Joueurs</button>
+    <button class="nav-btn" data-tab="admin" onclick="showSection('admin',this)">Admin</button>
+    <button class="nav-btn" data-tab="classement" onclick="showSection('classement',this)">Classement</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- CATALOGUE -->
+  <section id="catalogue" class="section visible">
+    <h2>Catalogue de skins</h2>
+    <div class="filter-bar">
+      <button class="filter-chip active" data-rarity="all" onclick="filterSkins('all',this)">Tous</button>
+      <button class="filter-chip" data-rarity="commun" onclick="filterSkins('commun',this)">Commun</button>
+      <button class="filter-chip" data-rarity="Rare" onclick="filterSkins('Rare',this)">Rare</button>
+      <button class="filter-chip" data-rarity="Epique" onclick="filterSkins('Epique',this)">Épique</button>
+      <button class="filter-chip" data-rarity="Legendaire" onclick="filterSkins('Legendaire',this)">Légendaire</button>
+    </div>
+    <div id="skins-grid" class="skins-grid"><div class="loading"><div class="spinner"></div></div></div>
+  </section>
+
+  <!-- JOUEURS -->
+  <section id="joueurs" class="section">
+    <div class="section-head">
+      <h2>Joueurs</h2>
+      <button class="btn-refresh" onclick="loadPlayers()">↻ Actualiser</button>
+    </div>
+    <div class="form-card" style="margin-bottom:2rem;">
+      <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;margin-bottom:1.25rem;">Créer un joueur</h3>
+      <div class="form-group">
+        <label>Pseudo</label>
+        <input type="text" id="player-pseudo" placeholder="Ex: ShadowBlade42" />
+      </div>
+      <div class="form-group">
+        <label>Solde initial (coins)</label>
+        <input type="number" id="player-solde" placeholder="5000" min="0" value="5000" />
+      </div>
+      <button class="btn-primary" onclick="createPlayer()">Créer le joueur</button>
+    </div>
+    <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;margin-bottom:1rem;">Tous les joueurs</h3>
+    <div id="players-grid" class="players-grid"><div class="loading"><div class="spinner"></div></div></div>
+  </section>
+
+  <!-- ADMIN -->
+  <section id="admin" class="section">
+    <h2>Ajouter un skin au catalogue</h2>
+    <div class="form-card">
+      <div class="form-group">
+        <label>Nom du skin</label>
+        <input type="text" id="skin-nom" placeholder="Ex: Ahri Étoile Gardienne" />
+      </div>
+      <div class="form-group">
+        <label>Rareté</label>
+        <select id="skin-rarete">
+          <option value="commun">Commun</option>
+          <option value="Rare">Rare</option>
+          <option value="Epique">Épique</option>
+          <option value="Legendaire">Légendaire</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Prix (coins)</label>
+        <input type="number" id="skin-prix" placeholder="1350" min="0" value="1350" />
+      </div>
+      <button class="btn-primary" onclick="createSkin()">Ajouter au catalogue</button>
+    </div>
+  </section>
+
+  <!-- CLASSEMENT -->
+  <section id="classement" class="section">
+    <div class="section-head">
+      <h2>Classement des fortunes</h2>
+      <button class="btn-refresh" onclick="loadWealth()">↻ Actualiser</button>
+    </div>
+    <div id="wealth-container"><div class="loading"><div class="spinner"></div></div></div>
+  </section>
+
+</main>
+
+<!-- MODAL ACHAT -->
+<div class="modal-overlay" id="buy-modal">
+  <div class="modal">
+    <h3 id="buy-modal-title">Choisir un joueur</h3>
+    <div id="buy-modal-players"></div>
+    <button class="modal-close" onclick="closeModal('buy-modal')">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL INVENTAIRE -->
+<div class="modal-overlay" id="inv-modal">
+  <div class="modal">
+    <h3 id="inv-modal-title">Inventaire</h3>
+    <div id="inv-modal-body"></div>
+    <button class="modal-close" onclick="closeModal('inv-modal')">Fermer</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const API = '';
+  let allSkins = [];
+  let currentFilter = 'all';
+  let selectedSkinForBuy = null;
+  const rarityEmoji = { commun:'⚪', Rare:'🔵', Epique:'🟣', Legendaire:'🟡' };
+
+  // ── Navigation ──
+  function showSection(id, btn){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
+    document.getElementById(id).classList.add('visible');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if(id==='catalogue') loadSkins();
+    if(id==='joueurs') loadPlayers();
+    if(id==='classement') loadWealth();
+  }
+
+  // ── Toast ──
+  function showToast(msg, type='success'){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.className=`show ${type}`;
+    clearTimeout(t._timer);
+    t._timer=setTimeout(()=>t.classList.remove('show'),3800);
+  }
+
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+  // ── Format date FR ──
+  function formatDate(iso){
+    if(!iso) return 'date inconnue';
+    return new Date(iso).toLocaleString('fr-FR',{
+      day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
+    });
+  }
+
+  // ── Catalogue ──
+  async function loadSkins(){
+    document.getElementById('skins-grid').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+    try{
+      const res=await fetch(`${API}/api/skins`);
+      allSkins=await res.json();
+      renderSkins();
+    }catch{ showToast('Impossible de charger les skins','error'); }
+  }
+  function filterSkins(rarity, btn){
+    currentFilter=rarity;
+    document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    renderSkins();
+  }
+  function renderSkins(){
+    const grid=document.getElementById('skins-grid');
+    const filtered=currentFilter==='all'?allSkins:allSkins.filter(s=>s.rarete===currentFilter);
+    if(!filtered.length){
+      grid.innerHTML='<div class="empty-state"><div class="icon">🎮</div><p>Aucun skin dans cette catégorie.</p></div>';
+      return;
+    }
+    grid.innerHTML=filtered.map(skin=>`
+      <div class="skin-card">
+        <div class="skin-card-top">
+          ${skin.image || rarityEmoji[skin.rarete] || '🎮'}
+          <div class="rarity-bar rarity-${skin.rarete.toLowerCase()}"></div>
+        </div>
+        <div class="skin-card-body">
+          <div class="skin-name">${escHtml(skin.nom)}</div>
+          <div class="skin-meta">
+            <span class="rarity-badge badge-${skin.rarete.toLowerCase()}">${skin.rarete}</span>
+            <span class="skin-price">⚡ ${skin.prix}</span>
+          </div>
+          <button class="btn-buy" onclick="openBuyModal('${skin._id}','${escHtml(skin.nom).replace(/'/g,"\\'")}',${skin.prix})">ACHETER</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Achat ──
+  async function openBuyModal(skinId, skinNom, skinPrix){
+    selectedSkinForBuy=skinId;
+    document.getElementById('buy-modal-title').textContent=`Acheter « ${skinNom} » — ${skinPrix} coins`;
+    document.getElementById('buy-modal-players').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+    document.getElementById('buy-modal').classList.add('open');
+    try{
+      const res=await fetch(`${API}/api/players`);
+      const players=await res.json();
+      if(!players.length){
+        document.getElementById('buy-modal-players').innerHTML='<p style="color:var(--muted);font-size:.9rem;padding:.5rem 0">Aucun joueur enregistré. Crée-en un dans l\'onglet Joueurs.</p>';
+        return;
+      }
+      document.getElementById('buy-modal-players').innerHTML=players.map(p=>`
+        <div class="player-option" onclick="doBuy('${p._id}')">
+          <strong>${escHtml(p.pseudo)}</strong>
+          <small>⚡ ${p.solde} coins</small>
+        </div>`).join('');
+    }catch{ showToast('Impossible de charger les joueurs','error'); closeModal('buy-modal'); }
+  }
+  async function doBuy(playerId){
+    const skinId=selectedSkinForBuy;
+    closeModal('buy-modal');
+    try{
+      const res=await fetch(`${API}/api/players/${playerId}/buy`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ skinId })
+      });
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.message||'Achat échoué');
+      showToast(`${data.message} Nouveau solde : ${data.nouveauSolde} coins`,'success');
+    }catch(e){ showToast(e.message,'error'); }
+  }
+
+  // ── Joueurs ──
+  async function loadPlayers(){
+    document.getElementById('players-grid').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+    try{
+      const res=await fetch(`${API}/api/players`);
+      const players=await res.json();
+      renderPlayers(players);
+    }catch{ showToast('Impossible de charger les joueurs','error'); }
+  }
+  function renderPlayers(players){
+    const grid=document.getElementById('players-grid');
+    if(!players.length){
+      grid.innerHTML='<div class="empty-state"><div class="icon">👤</div><p>Aucun joueur. Crée-en un avec le formulaire ci-dessus.</p></div>';
+      return;
+    }
+    grid.innerHTML=players.map(p=>`
+      <div class="player-card">
+        <div class="player-card-name">${escHtml(p.pseudo)}</div>
+        <div class="player-stats">
+          <div class="player-stat"><span class="val gold">⚡ ${p.solde}</span><span class="lbl">Solde</span></div>
+          <div class="player-stat"><span class="val violet">${p.inventory.length}</span><span class="lbl">Skins</span></div>
+        </div>
+        <button class="btn-inventory" onclick='openInventory(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Voir l'inventaire</button>
+      </div>`).join('');
+  }
+  function openInventory(player){
+    document.getElementById('inv-modal-title').textContent=`Inventaire de ${player.pseudo}`;
+    const body=document.getElementById('inv-modal-body');
+    if(!player.inventory.length){
+      body.innerHTML='<div class="empty-state"><div class="icon">🎒</div><p>Cet inventaire est vide. Achète un skin depuis le catalogue !</p></div>';
+    }else{
+      // Tri par date d'obtention décroissante (le plus récent en premier)
+      const items=[...player.inventory].sort((a,b)=>new Date(b.dateObtention)-new Date(a.dateObtention));
+      body.innerHTML=items.map(it=>{
+        const skin=it.skinId; // peuplé par le back (.populate)
+        if(!skin || typeof skin!=='object'){
+          return `<div class="inv-item"><div class="inv-emoji">❓</div><div class="inv-info"><div class="inv-name">Skin supprimé</div><div class="inv-date">Obtenu le ${formatDate(it.dateObtention)}</div></div></div>`;
+        }
+        return `
+          <div class="inv-item">
+            <div class="inv-emoji">${skin.image||rarityEmoji[skin.rarete]||'🎮'}</div>
+            <div class="inv-info">
+              <div class="inv-name">${escHtml(skin.nom)}</div>
+              <div class="inv-date">📅 Obtenu le ${formatDate(it.dateObtention)}</div>
+            </div>
+            <div class="inv-price">⚡ ${skin.prix}</div>
+          </div>`;
+      }).join('');
+    }
+    document.getElementById('inv-modal').classList.add('open');
+  }
+  async function createPlayer(){
+    const pseudo=document.getElementById('player-pseudo').value.trim();
+    const solde=parseFloat(document.getElementById('player-solde').value);
+    if(!pseudo){ showToast('Le pseudo est requis','error'); return; }
+    try{
+      const res=await fetch(`${API}/api/players`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ pseudo, solde })
+      });
+      const data=await res.json();
+      if(!res.ok){
+        const msg=data.details?data.details.map(d=>d.message).join(', '):(data.message||data.error);
+        throw new Error(msg);
+      }
+      showToast(`Joueur « ${data.pseudo} » créé avec ${data.solde} coins !`,'success');
+      document.getElementById('player-pseudo').value='';
+      loadPlayers();
+    }catch(e){ showToast(e.message,'error'); }
+  }
+
+  // ── Admin skin ──
+  async function createSkin(){
+    const nom=document.getElementById('skin-nom').value.trim();
+    const rarete=document.getElementById('skin-rarete').value;
+    const prix=parseFloat(document.getElementById('skin-prix').value);
+    if(!nom){ showToast('Le nom est requis','error'); return; }
+    if(isNaN(prix)||prix<0){ showToast('Prix invalide','error'); return; }
+    try{
+      const res=await fetch(`${API}/api/skins`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ nom, rarete, prix })
+      });
+      const data=await res.json();
+      if(!res.ok){
+        const msg=data.details?data.details.map(d=>d.message).join(', '):(data.message||data.error);
+        throw new Error(msg);
+      }
+      showToast(`Skin « ${data.nom} » ajouté au catalogue !`,'success');
+      document.getElementById('skin-nom').value='';
+    }catch(e){ showToast(e.message,'error'); }
+  }
+
+  // ── Classement ──
+  async function loadWealth(){
+    document.getElementById('wealth-container').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+    try{
+      const res=await fetch(`${API}/api/analytics/wealth`);
+      const data=await res.json();
+      renderWealth(data);
+    }catch{ showToast('Impossible de charger le classement','error'); }
+  }
+  function renderWealth(players){
+    const container=document.getElementById('wealth-container');
+    if(!players.length){
+      container.innerHTML='<div class="empty-state"><div class="icon">🏆</div><p>Aucun joueur enregistré.</p></div>';
+      return;
+    }
+    const maxFortune=players[0]?.fortuneTotale||1;
+    container.innerHTML=`
+      <table class="wealth-table">
+        <thead><tr>
+          <th>#</th><th>Joueur</th><th>Skins</th><th>Solde</th><th>Valeur inventaire</th><th style="min-width:220px">Fortune totale</th>
+        </tr></thead>
+        <tbody>
+          ${players.map((p,i)=>{
+            const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+            const pct=Math.round((p.fortuneTotale/maxFortune)*100);
+            return `<tr>
+              <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+              <td><strong>${escHtml(p.pseudo)}</strong></td>
+              <td>${p.nombreSkins}</td>
+              <td style="color:var(--muted)">⚡ ${p.solde}</td>
+              <td style="color:var(--epique)">⚡ ${p.valeurInventaire}</td>
+              <td><div class="fortune-bar-wrap">
+                <div class="fortune-bar"><div class="fortune-bar-fill" style="width:${pct}%"></div></div>
+                <span style="font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--gold);white-space:nowrap">⚡ ${p.fortuneTotale}</span>
+              </div></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  function escHtml(str){
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  loadSkins();
+</script>
+</body>
+</html>

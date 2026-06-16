@@ -1,0 +1,87 @@
+# SkinsVault
+
+Petite application de marketplace de skins (thème League of Legends). On peut
+parcourir un catalogue de skins, créer des joueurs, leur faire acheter des skins
+en fonction de leur solde, et voir un classement des joueurs les plus riches.
+
+Le projet utilise Node.js avec Express pour le serveur, Mongoose pour la base de
+données MongoDB (hébergée sur Atlas), et une page HTML/JS pour l'interface.
+
+## Prérequis
+
+- Node.js (version 18 minimum)
+- Un cluster MongoDB Atlas
+
+## Installation
+
+Cloner le projet puis installer les dépendances :
+
+```
+npm install
+```
+
+
+## Configuration
+
+La connexion à la base passe par un fichier `.env` à placer à la racine, à côté
+de `server.js`. Il y a un fichier `.env.example` qui sert de modèle. Le contenu
+ressemble à ça :
+
+```
+MONGODB_URI=mongodb+srv://utilisateur:motdepasse@cluster.mongodb.net/skinsvault
+PORT=3000
+```
+
+Il faut remplacer l'URI par la sienne (récupérable dans Atlas, bouton Connect).
+Penser aussi à autoriser l'accès réseau dans Atlas (Network Access -> 0.0.0.0/0).
+
+## Lancer le projet
+
+En développement (redémarre tout seul quand on modifie un fichier) :
+
+```
+npm run dev
+```
+
+Ou en mode normal :
+
+```
+npm start
+```
+
+Une fois lancé, la console affiche que la connexion à Atlas est ok et que le
+serveur tourne. Il suffit ensuite d'ouvrir http://localhost:3000 dans le navigateur.
+
+## Remplir la base
+
+Pour avoir des skins de départ sans les ajouter à la main, il y a un script à
+lancer une fois :
+
+```
+node seed.js
+```
+
+Attention, il vide les skins existants avant d'insérer les nouveaux.
+
+## Les routes de l'API
+
+Skins :
+- GET /api/skins — la liste des skins
+- POST /api/skins — ajouter un skin
+- GET, PUT, DELETE /api/skins/:id
+
+Joueurs :
+- GET /api/players — la liste des joueurs avec leur inventaire
+- POST /api/players — créer un joueur
+- POST /api/players/:id/buy — acheter un skin (on envoie l'id du skin dans le body)
+
+Stats :
+- GET /api/analytics/wealth — le classement des joueurs par fortune
+
+## Dépendances
+
+- express : le serveur et les routes
+- mongoose : la connexion à MongoDB et les modèles
+- dotenv : pour lire le fichier .env
+- cors
+- nodemon 
